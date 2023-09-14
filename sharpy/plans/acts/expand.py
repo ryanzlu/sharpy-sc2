@@ -160,7 +160,7 @@ class Expand(ActBase):
                 else:
                     available_minerals -= 50  # should start producing workers soon now
 
-        if available_minerals + time * self.income_calculator.mineral_income >= cost.minerals:
+        if available_minerals + time * self.income_calculator.mineral_income + 30 >= cost.minerals:
             # Go wait
             self.set_worker(worker)
 

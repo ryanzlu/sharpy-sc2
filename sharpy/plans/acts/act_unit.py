@@ -2,9 +2,8 @@ from sc2.data import Race
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.unit import Unit
 from sc2.units import Units
-
-from .act_base import ActBase
 from sharpy.interfaces import ILostUnitsManager, IIncomeCalculator
+from .act_base import ActBase
 
 REACTORS = {UnitTypeId.BARRACKSREACTOR, UnitTypeId.FACTORYREACTOR, UnitTypeId.STARPORTREACTOR, UnitTypeId.REACTOR}
 
@@ -15,7 +14,8 @@ class ActUnit(ActBase):
     lost_units_manager: ILostUnitsManager
     income_calculator: IIncomeCalculator
 
-    def __init__(self, unit_type: UnitTypeId, from_building: UnitTypeId, to_count: int = 9999, priority: bool = False):
+    def __init__(self, unit_type: UnitTypeId, from_building: UnitTypeId, to_count: int = 9999, priority: bool = False,
+                 allow_queue=True):
         assert unit_type is not None and isinstance(unit_type, UnitTypeId)
         assert from_building is not None and isinstance(from_building, UnitTypeId)
         assert to_count is not None and isinstance(to_count, int)
@@ -25,6 +25,7 @@ class ActUnit(ActBase):
         self.from_building = from_building
         self.to_count = to_count
         self.priority = priority
+        self.allow_queue = allow_queue
 
         super().__init__()
 
@@ -137,11 +138,21 @@ class ActUnit(ActBase):
         return False
 
     def has_order_ready(self, builder: Unit) -> bool:
-        if builder.add_on_tag == 0:
-            return len(builder.orders) == 0
+        if builder.add_on_tag != 0:
+            add_on = self.cache.by_tag(builder.add_on_tag)
+            has_reactor = add_on.type_id in REACTORS
+        else:
+            has_reactor = False
 
-        add_on = self.cache.by_tag(builder.add_on_tag)
+        progress_threshold_to_queue = 0.9
+        if has_reactor:
+            if len(builder.orders) < 2:
+                return True
+            if self.allow_queue:
+                return builder.orders[0].progress > progress_threshold_to_queue or \
+                    builder.orders[1].progress > progress_threshold_to_queue
 
-        if add_on.type_id in REACTORS:
-            return len(builder.orders) < 2
+        if self.allow_queue and len(builder.orders) == 1:
+            return builder.orders[0].progress > progress_threshold_to_queue
+
         return len(builder.orders) == 0
