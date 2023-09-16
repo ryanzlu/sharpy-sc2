@@ -12,6 +12,9 @@ if TYPE_CHECKING:
 
 
 class SequentialList(SubActs):
+    """
+    In each "execute" step, run through all steps and stop at one that returns False
+    """
     def __init__(
         self,
         orders: Union[

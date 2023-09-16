@@ -20,6 +20,12 @@ class Step(ActBase):
         skip: Optional[Union[RequireBase, Callable[["BotAI"], bool]]] = None,
         skip_until: Optional[Union[RequireBase, Callable[["BotAI"], bool]]] = None,
     ):
+        """
+        :param requirement: Does not run action until requirement is satisfied. This action is not considered as "completed", and blocks subsequent actions.
+        :param skip: Does not run action after skip_until is satisfied.
+        :param skip_until: Does not run action until skip_until is satisfied.  Similar to "requirement", but does not block subsequent actions
+
+        """
         assert requirement is None or isinstance(requirement, RequireBase) or isinstance(requirement, Callable)
         assert action is None or isinstance(action, ActBase) or isinstance(action, Callable)
         assert skip is None or isinstance(skip, RequireBase) or isinstance(skip, Callable)
