@@ -15,6 +15,10 @@ class UnitExists(RequireBase):
         include_killed: bool = False,
         include_not_ready: bool = True,
     ):
+        """
+        :param include_pending: Include units that are still producing
+        :param include_not_ready: Include buildings that are still building
+        """
 
         assert unit_type is not None and isinstance(unit_type, UnitTypeId)
         assert count is not None and isinstance(count, int)
